@@ -567,7 +567,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params) {
         }
 
         uint8 basketNum = params.read_u8(); // either 1 or 2
-        uint8 points = params.read_u8(); // either 2 or 3
+        //uint8 points = params.read_u8(); // either 2 or 3
+        uint8 points = 2; // temporary workaround because in multiplayer we're occasionally reading wrong numbers for points (very high numbers)
         log("onCommand", "basketNum: " + basketNum);
         log("onCommand", "points: " + points);
 
