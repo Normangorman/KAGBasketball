@@ -317,7 +317,19 @@ shared class CTFCore : RulesCore
             u32 timePassed = getGameTime() - rules.get_u32("last basket time");
             //log("Update", "timePassed: " + timePassed);
             if (timePassed > POST_BASKET_PAUSE_TIME) {
-                ResetBasketball();
+                log("Update", "Resetting basketball");
+                CBlob@ basketball = getBlobByName("basketball");
+
+                if (basketball !is null) {
+                    basketball.getSprite().Gib();
+                    basketball.server_Die();
+
+                    Vec2f spawnPos(getMap().tilemapwidth * 8 / 2.0, 20.0);
+                    server_CreateBlob("basketball", -1, spawnPos);
+                }
+                else {
+                    log("Update", "ERROR: Basketball not found");
+                }
                 rules.set_bool("in post basket pause", false);
             }
         }
@@ -353,22 +365,6 @@ shared class CTFCore : RulesCore
 
 		RulesCore::Update(); //update respawns
 	}
-
-    void ResetBasketball() {
-        log("ResetBasketball", "Function called");
-        CBlob@ basketball = getBlobByName("basketball");
-
-        if (basketball !is null) {
-            basketball.getSprite().Gib();
-            basketball.server_Die();
-
-            Vec2f spawnPos(getMap().tilemapwidth * 8 / 2.0, 20.0);
-            server_CreateBlob("basketball", -1, spawnPos);
-        }
-        else {
-            log("ResetBasketball", "ERROR: Basketball not found");
-        }
-    }
 
 	//HELPERS
 	bool allTeamsHavePlayers()
