@@ -317,20 +317,20 @@ shared class CTFCore : RulesCore
             u32 timePassed = getGameTime() - rules.get_u32("last basket time");
             //log("Update", "timePassed: " + timePassed);
             if (timePassed > POST_BASKET_PAUSE_TIME) {
-                log("Update", "Resetting basketball");
+                //log("Update", "Resetting basketball");
                 CBlob@ basketball = getBlobByName("basketball");
 
-                if (basketball !is null) {
-                    basketball.getSprite().Gib();
-                    basketball.server_Die();
-
-                    Vec2f spawnPos(getMap().tilemapwidth * 8 / 2.0, 20.0);
-                    server_CreateBlob("basketball", -1, spawnPos);
+                if (basketball !is null && !basketball.hasTag("dying")) {
+                    log("Update", "Sent gib command to basketball");
+                    basketball.SendCommand(basketball.getCommandID("gib"));
+                    basketball.Tag("dying");
                 }
                 else {
-                    log("Update", "ERROR: Basketball not found");
+                    log("Update", "Creating new basketball");
+                    Vec2f spawnPos(getMap().tilemapwidth * 8 / 2.0, 20.0);
+                    server_CreateBlob("basketball", -1, spawnPos);
+                    rules.set_bool("in post basket pause", false);
                 }
-                rules.set_bool("in post basket pause", false);
             }
         }
 

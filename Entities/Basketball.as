@@ -9,19 +9,25 @@ const f32 hit_amount_air_fast = 3.0f;
 const f32 hit_amount_cata = 10.0f;
 const u32 BASKETBALL_MAX_HOLD_TIME = 60;
 const float BASKETBALL_MAX_VELOCITY = 8.0;
+const float BASKETBALL_MAX_PICKUP_DIST = 30.0f;
 
 void onInit(CBlob @ this)
 {
     this.getShape().SetRotationsAllowed(true);
+    this.getShape().getConsts().collideWhenAttached = true;
 	this.set_u8("launch team", 255);
 	this.server_setTeamNum(-1);
 
 	this.getCurrentScript().tickFrequency = 1;
+    this.Tag("special"); // for pickup prio
+
+    this.addCommandID("gib");
 }
 
 void onTick(CBlob@ this)
 {
     // Don't let people hold on too long
+    /*
     if (this.isAttached()) {
         u32 attach_time = this.get_u32("attach_time");
         u32 time_held = getGameTime() - attach_time;
@@ -29,6 +35,7 @@ void onTick(CBlob@ this)
             this.server_DetachFromAll();
         }
     }
+    */
 
     // Limit velocity
     Vec2f vel = this.getVelocity();
@@ -86,7 +93,7 @@ void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint)
 	if(attached.getPlayer() !is null)
 	{
 		this.SetDamageOwnerPlayer(attached.getPlayer());
-        this.set_u32("attach_time", getGameTime()); // prevent someone holding the ball too long
+        this.set_u32("attach_time", getGameTime());
 	}
 }
 
@@ -158,5 +165,34 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
+	if (getNet().isServer() &&
+	        !isExplosionHitter(customData) &&
+	        (hitterBlob is null || hitterBlob.getTeamNum() != this.getTeamNum()))
+	{
+        this.server_DetachFromAll();
+        /*
+		u16 id = this.get_u16("_keg_carrier_id");
+		if (id != 0xffff)
+		{
+			CBlob@ carrier = getBlobByNetworkID(id);
+			if (carrier !is null)
+			{
+				this.server_DetachFrom(carrier);
+			}
+		}
+        */
+    }
+
 	return 0;
+}
+
+void onCommand(CBlob@ this, u8 cmd, CBitStream@ params) {
+    if (cmd == this.getCommandID("gib")) {
+        this.getSprite().Gib();
+        this.server_Die();
+    }
+}
+
+bool canBePickedUp(CBlob@ this, CBlob@ other) {
+	return this.getDistanceTo(other) < BASKETBALL_MAX_PICKUP_DIST;
 }

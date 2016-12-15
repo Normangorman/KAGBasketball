@@ -28,7 +28,7 @@ void onTick(CBlob@ this) {
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params) {
     if (cmd == this.getCommandID("score basket")) {
-        log("onCommand", "score basket command received");
+        //log("onCommand", "score basket command received");
 
         if (XORRandom(5) > 3) {
             return;
