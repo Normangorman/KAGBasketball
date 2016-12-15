@@ -1,29 +1,14 @@
 #include "Logging.as";
 #include "Basketball_Structs.as";
 
-void onInit(CRules@ this)
-{
-    onRestart(this);
-    GUI::LoadFont("big score font", "GUI/Fonts/AveriaSerif-Bold.ttf", 36, true);
-}
-
-void onRestart( CRules@ this )
-{
-    /*
-    UIData ui;
-    this.set("uidata", @ui);
-    CBitStream bt = ui.serialize();
-
-	this.set_CBitStream("ctf_serialised_team_hud", bt);
-	this.Sync("ctf_serialised_team_hud", true);
-    */
-
-}
-
 void onRender(CRules@ this)
 {
 	CPlayer@ p = getLocalPlayer();
 	if (p is null || !p.isMyPlayer()) { return; }
+
+    if (!GUI::isFontLoaded("big score font")) {
+        GUI::LoadFont("big score font", "GUI/Fonts/AveriaSerif-Bold.ttf", 36, true);
+    }
 
     // Render team scores
     GUI::SetFont("big score font");
